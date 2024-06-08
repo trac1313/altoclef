@@ -115,12 +115,12 @@ public class MarvionBeatMinecraftTask extends Task {
     private static final int TWISTING_VINES_COUNT_MIN = 14;
     // We don't want curse of binding
     private static final Predicate<ItemStack> _noCurseOfBinding = stack -> {
-        for (NbtElement elm : stack.getEnchantments()) {
-            NbtCompound comp = (NbtCompound) elm;
-            if (comp.getString("id").equals("minecraft:binding_curse")) {
-                return false;
-            }
-        }
+        //for (NbtElement elm : stack.getEnchantments()) {
+        //    NbtCompound comp = (NbtCompound) elm;
+        //    if (comp.getString("id").equals("minecraft:binding_curse")) {
+        //        return false;
+        //    }
+        //}
         return true;
     };
     private static BeatMinecraftConfig _config;

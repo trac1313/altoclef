@@ -21,6 +21,7 @@ import net.minecraft.client.gui.screen.GameMenuScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.option.GameOptionsScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.*;
 import net.minecraft.screen.*;
@@ -29,6 +30,8 @@ import org.apache.commons.lang3.ArrayUtils;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+
+import static net.minecraft.item.ToolMaterials.*;
 
 /**
  * Helper functions for interpreting containers/slots/windows/inventory
@@ -144,7 +147,7 @@ public class StorageHelper {
                     continue;
                 ItemStack stack = getItemStackInSlot(slot);
                 if (stack.getItem() instanceof ToolItem) {
-                    if (stack.getItem().isSuitableFor(state)) {
+                    if (stack.getItem().isCorrectForDrops(stack, state)) {
                         double speed = ToolSet.calculateSpeedVsBlock(stack, state);
                         if (speed > highestSpeed) {
                             highestSpeed = speed;
@@ -203,7 +206,24 @@ public class StorageHelper {
                 Item item = stack.getItem();
                 if (item instanceof ToolItem tool) {
                     Class c = tool.getClass();
-                    int level = tool.getMaterial().getMiningLevel();
+                    int level = -1;
+                    ToolMaterial material = tool.getMaterial();
+                    if (material.equals(NETHERITE)) {
+                        level = 5;
+                    } else if (material.equals(DIAMOND)) {
+                        level = 4;
+                    } else if (material.equals(IRON)) {
+                        level = 3;
+                    } else if (material.equals(GOLD)) {
+                        level = 2;
+                    } else if (material.equals(STONE)) {
+                        level = 1;
+                    } else if (material.equals(WOOD)) {
+                        level = 1;
+                    } else {
+                        Debug.logError("You missed a spot");
+                    }
+
                     int prevBest = bestMaterials.getOrDefault(c, 0);
                     if (level > prevBest) {
                         // We had a WORSE tool before.
@@ -242,8 +262,8 @@ public class StorageHelper {
                     if (ItemHelper.canThrowAwayStack(mod, stack)) {
                         possibleSlots.add(slot);
                     }
-                    if (stack.getItem().isFood()) {
-                        calcTotalFoodScore += Objects.requireNonNull(stack.getItem().getFoodComponent()).getHunger();
+                    if (stack.contains(DataComponentTypes.FOOD)) {
+                        calcTotalFoodScore += Objects.requireNonNull(stack.get(DataComponentTypes.FOOD).nutrition());
                     }
                 }
             }
@@ -266,8 +286,8 @@ public class StorageHelper {
                         // Prioritize material type, then durability.
                         ToolItem leftTool = (ToolItem) left.getItem();
                         ToolItem rightTool = (ToolItem) right.getItem();
-                        if (leftTool.getMaterial().getMiningLevel() != rightTool.getMaterial().getMiningLevel()) {
-                            return leftTool.getMaterial().getMiningLevel() - rightTool.getMaterial().getMiningLevel();
+                        if (leftTool.getMaterial().getDurability() != rightTool.getMaterial().getDurability()) {
+                            return leftTool.getMaterial().getDurability() - rightTool.getMaterial().getDurability();
                         }
                         // We want less damage.
                         return left.getDamage() - right.getDamage();
@@ -275,8 +295,8 @@ public class StorageHelper {
 
                     // Prioritize food over other things if we lack food.
                     boolean lacksFood = totalFoodScore < 8;
-                    boolean leftIsFood = left.getItem().isFood() && left.getItem() != Items.SPIDER_EYE;
-                    boolean rightIsFood = right.getItem().isFood() && right.getItem() != Items.SPIDER_EYE;
+                    boolean leftIsFood = left.contains(DataComponentTypes.FOOD) && left.getItem() != Items.SPIDER_EYE;
+                    boolean rightIsFood = right.contains(DataComponentTypes.FOOD) && right.getItem() != Items.SPIDER_EYE;
                     if (lacksFood) {
                         if (rightIsFood && !leftIsFood) {
                             return -1;
@@ -286,10 +306,10 @@ public class StorageHelper {
                     }
                     // If both are food, pick the better cost.
                     if (leftIsFood && rightIsFood) {
-                        assert left.getItem().getFoodComponent() != null;
-                        assert right.getItem().getFoodComponent() != null;
-                        int leftCost = left.getItem().getFoodComponent().getHunger() * left.getCount(),
-                                rightCost = right.getItem().getFoodComponent().getHunger() * right.getCount();
+                        assert left.get(DataComponentTypes.FOOD) != null;
+                        assert right.get(DataComponentTypes.FOOD) != null;
+                        int leftCost = left.get(DataComponentTypes.FOOD).nutrition() * left.getCount(),
+                                rightCost = right.get(DataComponentTypes.FOOD).nutrition() * right.getCount();
                         return -1 * (leftCost - rightCost);
                     }
 
@@ -389,8 +409,8 @@ public class StorageHelper {
         int result = 0;
         if (!mod.getItemStorage().getItemStacksPlayerInventory(true).isEmpty()) {
             for (ItemStack stack : mod.getItemStorage().getItemStacksPlayerInventory(true)) {
-                if (stack.isFood())
-                    result += Objects.requireNonNull(stack.getItem().getFoodComponent()).getHunger() * stack.getCount();
+                if (stack.contains(DataComponentTypes.FOOD))
+                    result += Objects.requireNonNull(stack.get(DataComponentTypes.FOOD).nutrition() * stack.getCount());
             }
         }
         return result;
