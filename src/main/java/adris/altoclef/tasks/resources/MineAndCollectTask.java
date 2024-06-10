@@ -18,14 +18,14 @@ import adris.altoclef.util.time.TimerGame;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.MiningToolItem;
+import net.minecraft.item.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
+
+import static net.minecraft.item.ToolMaterials.*;
+import static net.minecraft.item.ToolMaterials.WOOD;
 
 public class MineAndCollectTask extends ResourceTask {
 
@@ -123,6 +123,33 @@ public class MineAndCollectTask extends ResourceTask {
         return "Mine And Collect";
     }
 
+    private static int toolLevel(ToolMaterial toolMaterial) {
+        switch (toolMaterial) {
+            case NETHERITE -> {
+                return 6;
+            }
+            case DIAMOND -> {
+                return 5;
+            }
+            case IRON -> {
+                return 4;
+            }
+            case GOLD -> {
+                return 3;
+            }
+            case STONE -> {
+                return 2;
+            }
+            case WOOD -> {
+                return 1;
+            }
+            default -> {
+                Debug.logError("You missed a spot");
+                return 0;
+            }
+        }
+    }
+
     private void makeSureToolIsEquipped(AltoClef mod) {
         if (_cursorStackTimer.elapsed() && !mod.getFoodChain().needsToEat()) {
             assert MinecraftClient.getInstance().player != null;
@@ -136,7 +163,7 @@ public class MineAndCollectTask extends ResourceTask {
                     if (item instanceof MiningToolItem) {
                         if (currentlyEquipped instanceof MiningToolItem currentPick) {
                             MiningToolItem swapPick = (MiningToolItem) item;
-                            if (swapPick.getMaterial().toString().equals(currentPick.getMaterial().toString())) {
+                            if (toolLevel(swapPick.getMaterial()) > toolLevel(currentPick.getMaterial())) {
                                 // We can equip a better pickaxe.
                                 mod.getSlotHandler().forceEquipSlot(CursorSlot.SLOT);
                             }

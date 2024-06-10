@@ -55,9 +55,9 @@ public class CollectMeatTask extends Task {
         int count = food.getCount();
         if (count <= 0) return 0;
         for (CookableFoodTarget cookable : COOKABLE_FOODS) {
-            if (food.getItem() == cookable.getRaw().getItem()) {
-                assert cookable.getCooked().get(DataComponentTypes.FOOD) != null;
-                return count * cookable.getCooked().get(DataComponentTypes.FOOD).nutrition();
+            if (food.getItem() == cookable.getRaw()) {
+                assert cookable.getCooked().getDefaultStack().get(DataComponentTypes.FOOD) != null;
+                return count * Objects.requireNonNull(cookable.getCooked().getDefaultStack().get(DataComponentTypes.FOOD)).nutrition();
             }
         }
         return 0;
@@ -127,10 +127,10 @@ public class CollectMeatTask extends Task {
             // - If we have raw foods, smelt all of them
             // Convert raw foods -> cooked foods
             for (CookableFoodTarget cookable : COOKABLE_FOODS) {
-                int rawCount = mod.getItemStorage().getItemCount(cookable.getRaw().getItem());
+                int rawCount = mod.getItemStorage().getItemCount(cookable.getRaw());
                 if (rawCount > 0) {
                     //Debug.logMessage("STARTING COOK OF " + cookable.getRaw().getTranslationKey());
-                    int toSmelt = rawCount + mod.getItemStorage().getItemCount(cookable.getCooked().getItem());
+                    int toSmelt = mod.getItemStorage().getItemCount(cookable.getCooked());
                     _smeltTask = new SmeltInSmokerTask(new SmeltTarget(new ItemTarget(cookable.cookedFood, toSmelt), new ItemTarget(cookable.rawFood, rawCount)));
                     _smeltTask.ignoreMaterials();
                     return _smeltTask;
@@ -139,8 +139,8 @@ public class CollectMeatTask extends Task {
         } else {
             // Pick up raw/cooked foods on ground
             for (CookableFoodTarget cookable : COOKABLE_FOODS) {
-                Task t = this.pickupTaskOrNull(mod, cookable.getRaw().getItem(), 20);
-                if (t == null) t = this.pickupTaskOrNull(mod, cookable.getCooked().getItem(), 40);
+                Task t = this.pickupTaskOrNull(mod, cookable.getRaw(), 20);
+                if (t == null) t = this.pickupTaskOrNull(mod, cookable.getCooked(), 40);
                 if (t != null) {
                     setDebugState("Picking up Cookable food");
                     _currentResourceTask = t;
@@ -161,7 +161,7 @@ public class CollectMeatTask extends Task {
                 if (score > bestScore) {
                     bestScore = score;
                     bestEntity = nearest.get();
-                    bestRawFood = cookable.getRaw().getItem();
+                    bestRawFood = cookable.getRaw();
                 }
             }
             if (bestEntity != null) {
@@ -246,17 +246,17 @@ public class CollectMeatTask extends Task {
             this(rawFood, "cooked_" + rawFood, mobToKill);
         }
 
-        private ItemStack getRaw() {
-            return Objects.requireNonNull(TaskCatalogue.getItemMatches(rawFood))[0].getDefaultStack();
+        private Item getRaw() {
+            return Objects.requireNonNull(TaskCatalogue.getItemMatches(rawFood))[0];
         }
 
-        private ItemStack getCooked() {
-            return Objects.requireNonNull(TaskCatalogue.getItemMatches(cookedFood))[0].getDefaultStack();
+        private Item getCooked() {
+            return Objects.requireNonNull(TaskCatalogue.getItemMatches(cookedFood))[0];
         }
 
         public int getCookedUnits() {
-            assert getCooked().get(DataComponentTypes.FOOD) != null;
-            return getCooked().get(DataComponentTypes.FOOD).nutrition();
+            assert getCooked().getDefaultStack().get(DataComponentTypes.FOOD) != null;
+            return Objects.requireNonNull(getCooked().getDefaultStack().get(DataComponentTypes.FOOD)).nutrition();
         }
     }
 }

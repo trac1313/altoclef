@@ -7,6 +7,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.LeavesBlock;
 import net.minecraft.block.MapColor;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -15,6 +16,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.DyeColor;
+import net.minecraft.nbt.NbtIo;
 
 import java.util.*;
 
@@ -388,7 +390,7 @@ public class ItemHelper {
     private static boolean isStackProtected(AltoClef mod, ItemStack stack) {
         if (stack.hasEnchantments() && mod.getModSettings().getDontThrowAwayEnchantedItems())
             return true;
-        if (stack.isEnchantable() && mod.getModSettings().getDontThrowAwayCustomNameItems())
+        if (stack.contains(DataComponentTypes.CUSTOM_NAME) && mod.getModSettings().getDontThrowAwayCustomNameItems())
             return true;
         return mod.getBehaviour().isProtected(stack.getItem()) || mod.getModSettings().isImportant(stack.getItem());
     }

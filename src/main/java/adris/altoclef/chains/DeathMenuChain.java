@@ -63,6 +63,8 @@ public class DeathMenuChain extends TaskChain {
         //MinecraftClient.getInstance().getCurrentServerEntry().address;
 //        MinecraftClient.getInstance().
         Screen screen = MinecraftClient.getInstance().currentScreen;
+
+        //TODO: No clue how to properly do the CookieStorage
         CookieStorage cookieStorage = null;
 
         // This might fix Weird fail to respawn that happened only once

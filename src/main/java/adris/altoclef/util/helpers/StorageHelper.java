@@ -88,6 +88,33 @@ public class StorageHelper {
         }
     }
 
+    private static int toolLevel(ToolMaterial toolMaterial) {
+        switch (toolMaterial) {
+            case NETHERITE -> {
+                return 6;
+            }
+            case DIAMOND -> {
+                return 5;
+            }
+            case IRON -> {
+                return 4;
+            }
+            case GOLD -> {
+                return 3;
+            }
+            case STONE -> {
+                return 2;
+            }
+            case WOOD -> {
+                return 1;
+            }
+            default -> {
+                Debug.logError("You missed a spot");
+                return 0;
+            }
+        }
+    }
+
     public static MiningRequirement getCurrentMiningRequirement(AltoClef mod) {
         MiningRequirement[] order = new MiningRequirement[]{
                 MiningRequirement.DIAMOND, MiningRequirement.IRON, MiningRequirement.STONE, MiningRequirement.WOOD
@@ -206,23 +233,8 @@ public class StorageHelper {
                 Item item = stack.getItem();
                 if (item instanceof ToolItem tool) {
                     Class c = tool.getClass();
-                    int level = -1;
-                    ToolMaterial material = tool.getMaterial();
-                    if (material.equals(NETHERITE)) {
-                        level = 5;
-                    } else if (material.equals(DIAMOND)) {
-                        level = 4;
-                    } else if (material.equals(IRON)) {
-                        level = 3;
-                    } else if (material.equals(GOLD)) {
-                        level = 2;
-                    } else if (material.equals(STONE)) {
-                        level = 1;
-                    } else if (material.equals(WOOD)) {
-                        level = 1;
-                    } else {
-                        Debug.logError("You missed a spot");
-                    }
+                    int level = toolLevel(tool.getMaterial());
+
 
                     int prevBest = bestMaterials.getOrDefault(c, 0);
                     if (level > prevBest) {
@@ -286,8 +298,8 @@ public class StorageHelper {
                         // Prioritize material type, then durability.
                         ToolItem leftTool = (ToolItem) left.getItem();
                         ToolItem rightTool = (ToolItem) right.getItem();
-                        if (leftTool.getMaterial().getDurability() != rightTool.getMaterial().getDurability()) {
-                            return leftTool.getMaterial().getDurability() - rightTool.getMaterial().getDurability();
+                        if (toolLevel(leftTool.getMaterial()) != toolLevel(rightTool.getMaterial())) {
+                            return toolLevel(leftTool.getMaterial()) - toolLevel(rightTool.getMaterial());
                         }
                         // We want less damage.
                         return left.getDamage() - right.getDamage();
