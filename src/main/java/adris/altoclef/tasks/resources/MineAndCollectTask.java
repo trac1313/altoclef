@@ -25,7 +25,6 @@ import net.minecraft.util.math.Vec3d;
 import java.util.*;
 
 import static net.minecraft.item.ToolMaterials.*;
-import static net.minecraft.item.ToolMaterials.WOOD;
 
 public class MineAndCollectTask extends ResourceTask {
 
