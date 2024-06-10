@@ -123,31 +123,24 @@ public class MineAndCollectTask extends ResourceTask {
     }
 
     private static int toolLevel(ToolMaterial toolMaterial) {
-        switch (toolMaterial) {
-            case NETHERITE -> {
-                return 6;
-            }
-            case DIAMOND -> {
-                return 5;
-            }
-            case IRON -> {
-                return 4;
-            }
-            case GOLD -> {
-                return 3;
-            }
-            case STONE -> {
-                return 2;
-            }
-            case WOOD -> {
-                return 1;
-            }
-            default -> {
-                Debug.logError("You missed a spot");
-                return 0;
-            }
+        if (toolMaterial == NETHERITE) {
+            return 6;
+        } else if (toolMaterial == DIAMOND) {
+            return 5;
+        } else if (toolMaterial == IRON) {
+            return 4;
+        } else if (toolMaterial == GOLD) {
+            return 3;
+        } else if (toolMaterial == STONE) {
+            return 2;
+        } else if (toolMaterial == WOOD) {
+            return 1;
+        } else {
+            Debug.logError("You missed a spot");
+            return 0;
         }
     }
+
 
     private void makeSureToolIsEquipped(AltoClef mod) {
         if (_cursorStackTimer.elapsed() && !mod.getFoodChain().needsToEat()) {
